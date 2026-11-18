@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DayLog">
+<meta name="theme-color" content="#101a33">
+<title>DayLog</title>
+<style>
+:root{--bg:#eef1f7;--card:#fff;--ink:#101a33;--mute:#6b7590;--line:#e1e6f0;--acc:#3a5bff;--ok:#16a870;
+--c-Applied:#3a5bff;--c-Interview:#e8960c;--c-Offer:#16a870;--c-Rejected:#e0455a;--c-x:#8a5cf6;box-sizing:border-box}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--card:#161d33;--ink:#eef1fb;--mute:#8f9ab8;--line:#252e4a;--acc:#6f86ff}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;overflow:hidden;padding-top:env(safe-area-inset-top,0px)}
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px 24px}
+h1{font-size:30px;letter-spacing:-.5px;margin:0}
+.sub{color:var(--mute);font-size:14px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+nav{display:flex;background:var(--card);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;background:none;border:0;color:var(--mute);font:600 12px inherit;font-family:inherit;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--acc)}
+.strip{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none;margin:0 -16px;padding-left:16px;padding-right:16px}
+.strip::-webkit-scrollbar{display:none}
+.day{flex:0 0 52px;height:70px;border-radius:16px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--ink);font-family:inherit}
+.day small{font-size:11px;color:var(--mute)}.day b{font-size:19px}
+.day i{width:6px;height:6px;border-radius:9px;background:transparent}
+.day.has i{background:var(--mute)}.day.done i{background:var(--ok)}
+.day.sel{background:var(--ink);color:var(--bg);border-color:var(--ink)}.day.sel small{color:var(--bg);opacity:.7}
+.day.tod b{color:var(--acc)}.day.sel.tod b{color:var(--bg)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}
+.hero{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.ring{width:64px;height:64px;flex:none}
+.ring circle{fill:none;stroke-width:7}
+.add{display:flex;gap:8px;margin:12px 0}
+input,select,textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:12px;padding:12px 16px;font:600 16px inherit;font-family:inherit;white-space:nowrap}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.red{background:var(--c-Rejected)}
+.task{display:flex;align-items:center;gap:12px;padding:13px 14px;margin-bottom:8px}
+.chk{width:26px;height:26px;border-radius:50%;border:2px solid var(--mute);flex:none;display:grid;place-items:center;background:none;padding:0;color:#fff}
+.task.d .chk{background:var(--ok);border-color:var(--ok)}
+.task.d span{text-decoration:line-through;color:var(--mute)}
+.task span{flex:1;word-break:break-word}
+.x{background:none;border:0;color:var(--mute);font-size:22px;padding:0 4px}
+.empty{text-align:center;color:var(--mute);padding:36px 10px}
+.mini{font-size:13px;padding:8px 12px;border-radius:10px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
+.cal .h{text-align:center;font-size:11px;color:var(--mute)}
+.cell{aspect-ratio:1;border-radius:10px;border:1px solid var(--line);display:grid;place-items:center;font-size:14px;color:var(--ink);background:var(--card);font-family:inherit;padding:0}
+.cell.sel{outline:2px solid var(--acc)}.cell.tod{font-weight:800;color:var(--acc)}
+.stats{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px;scrollbar-width:none}
+.stats::-webkit-scrollbar{display:none}
+.stat{flex:0 0 auto;min-width:78px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 12px;color:var(--ink);font-family:inherit}
+.stat b{display:block;font-size:22px}.stat small{color:var(--mute);font-size:12px}
+.stat.on{background:var(--ink);color:var(--bg)}.stat.on small{color:var(--bg);opacity:.7}
+.job{display:block;width:100%;text-align:left;margin-bottom:10px;color:var(--ink);font-family:inherit;border-left:5px solid var(--c)}
+.job .r{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.job b{font-size:17px}.job p{margin:6px 0 0;color:var(--mute);font-size:14px}
+.pill{font-size:12px;font-weight:700;color:#fff;background:var(--c);padding:4px 10px;border-radius:99px;white-space:nowrap}
+.fab{position:fixed;right:18px;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;background:var(--acc);color:#fff;border:0;font-size:32px;box-shadow:0 8px 24px rgba(58,91,255,.4)}
+.sheet{position:fixed;inset:0;background:rgba(5,9,22,.55);display:flex;align-items:flex-end;z-index:9}
+.sheet>div{background:var(--bg);width:100%;max-height:92%;overflow-y:auto;border-radius:24px 24px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.sheet label{display:block;font-size:13px;color:var(--mute);margin:12px 0 4px}
+.row{display:flex;gap:8px;margin-top:16px}.row .btn{flex:1}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<main id="main"></main>
+<nav>
+ <button data-t="tasks"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M8.5 13l2.5 2.5 4.5-5"/></svg>Tasks</button>
+ <button data-t="jobs"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="3"/><path d="M9 8V6a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18"/></svg>Jobs</button>
+ <button data-t="data"><svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19h14"/></svg>Backup</button>
+</nav>
+<div id="sheet" class="sheet hide"><div id="sheetBody"></div></div>
+<script>
+const K='daylog.v1',BASE=['Applied','Interview','Offer','Rejected'];
+let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}
+S=S||{tasks:{},jobs:[],custom:[]};S.custom=S.custom||[];
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const parse=s=>{const p=s.split('-');return new Date(p[0],p[1]-1,p[2])};
+const today=()=>iso(new Date());
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+let tab='tasks',sel=today(),cal=false,cm=new Date(),filter='All';
+const col=s=>'var(--c-'+(BASE.includes(s)?s:'x')+')';
+const allStatus=()=>BASE.concat(S.custom);
+const prog=d=>{const l=S.tasks[d]||[];return{n:l.length,k:l.filter(t=>t.d).length}};
+
+function ring(k,n){const r=28,c=2*Math.PI*r,f=n?k/n:0;
+return `<svg class="ring" viewBox="0 0 64 64"><circle cx="32" cy="32" r="${r}" stroke="var(--line)"/><circle cx="32" cy="32" r="${r}" stroke="var(--ok)" stroke-linecap="round" stroke-dasharray="${c*f} ${c}" transform="rotate(-90 32 32)"/><text x="32" y="37" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">${n?Math.round(f*100):0}%</text></svg>`}
+
+function renderTasks(){
+ const d=parse(sel),p=prog(sel),list=S.tasks[sel]||[];
+ let strip='';const t0=new Date();
+ for(let i=-14;i<=6;i++){const x=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()+i),k=iso(x),q=prog(k);
+  strip+=`<button class="day ${k===sel?'sel':''} ${i===0?'tod':''} ${q.n?'has':''} ${q.n&&q.k===q.n?'done':''}" data-d="${k}"><small>${x.toLocaleDateString('en',{weekday:'short'})}</small><b>${x.getDate()}</b><i></i></button>`}
+ let body=`<div class="top"><div><h1>${sel===today()?'Today':d.toLocaleDateString('en',{weekday:'long'})}</h1><div class="sub">${d.toLocaleDateString('en',{day:'numeric',month:'long',year:'numeric'})}</div></div><button class="btn ghost mini" id="calBtn">${cal?'Week':'Month'}</button></div>`;
+ if(cal){
+  const y=cm.getFullYear(),m=cm.getMonth(),first=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate();
+  let cells='SMTWTFS'.split('').map(x=>`<div class="h">${x}</div>`).join('')+'<div></div>'.repeat(first);
+  for(let i=1;i<=dim;i++){const k=iso(new Date(y,m,i)),q=prog(k),pc=q.n?Math.max(18,Math.round(q.k/q.n*100)):0;
+   const bg=q.n?`style="background:color-mix(in srgb,var(--ok) ${pc}%,var(--card))"`:'';
+   cells+=`<button class="cell ${k===sel?'sel':''} ${k===today()?'tod':''}" ${bg} data-d="${k}">${i}</button>`}
+  body+=`<div class="card"><div class="top" style="margin:0"><button class="x" id="pm">‹</button><b>${cm.toLocaleDateString('en',{month:'long',year:'numeric'})}</b><button class="x" id="nm">›</button></div><div class="cal">${cells}</div><p class="sub" style="margin:10px 0 0">Greener days = more tasks completed. Tap a day to open it.</p></div>`;
+ }else body+=`<div class="strip" id="strip">${strip}</div>`;
+ body+=`<div class="card hero">${ring(p.k,p.n)}<div><b>${p.n?`${p.k} of ${p.n} done`:'No tasks yet'}</b><div class="sub">${p.n&&p.k===p.n?'All finished for this day':p.n?`${p.n-p.k} left`:'Add your first task below'}</div></div></div>
+ <form class="add" id="addT"><input id="tIn" placeholder="Add a task for this day" enterkeyhint="done" autocomplete="off"><button class="btn">Add</button></form>`;
+ body+=list.length?list.map(t=>`<div class="card task ${t.d?'d':''}"><button class="chk" data-c="${t.id}">${t.d?'✓':''}</button><span>${esc(t.t)}</span><button class="x" data-x="${t.id}">×</button></div>`).join(''):`<div class="empty">Nothing planned for this day.</div>`;
+ $('#main').innerHTML=body;
+ const sd=$('.day.sel');if(sd)sd.scrollIntoView({inline:'center',block:'nearest'});
+ $('#calBtn').onclick=()=>{cal=!cal;cm=parse(sel);render()};
+ document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{sel=b.dataset.d;cal=false;render()});
+ if(cal){$('#pm').onclick=()=>{cm=new Date(cm.getFullYear(),cm.getMonth()-1,1);render()};$('#nm').onclick=()=>{cm=new Date(cm.getFullYear(),cm.getMonth()+1,1);render()}}
+ $('#addT').onsubmit=e=>{e.preventDefault();const v=$('#tIn').value.trim();if(!v)return;(S.tasks[sel]=S.tasks[sel]||[]).push({id:uid(),t:v,d:false});save();render();$('#tIn').focus()};
+ document.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{const t=S.tasks[sel].find(x=>x.id===b.dataset.c);t.d=!t.d;save();render()});
+ document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>{S.tasks[sel]=S.tasks[sel].filter(x=>x.id!==b.dataset.x);if(!S.tasks[sel].length)delete S.tasks[sel];save();render()});
+}
+
+function renderJobs(){
+ const st=allStatus(),cnt=s=>S.jobs.filter(j=>j.status===s).length;
+ const shown=S.jobs.filter(j=>filter==='All'||j.status===filter).sort((a,b)=>b.date.localeCompare(a.date));
+ let h=`<div class="top"><div><h1>Applications</h1><div class="sub">${S.jobs.length} tracked</div></div></div>
+ <div class="stats"><button class="stat ${filter==='All'?'on':''}" data-f="All"><b>${S.jobs.length}</b><small>All</small></button>${st.map(s=>`<button class="stat ${filter===s?'on':''}" data-f="${esc(s)}"><b>${cnt(s)}</b><small>${esc(s)}</small></button>`).join('')}</div>`;
+ h+=shown.length?shown.map(j=>`<button class="card job" style="--c:${col(j.status)}" data-j="${j.id}"><div class="r"><b>${esc(j.co)}</b><span class="pill">${esc(j.status)}</span></div><div>${esc(j.role)}</div><p>Applied ${parse(j.date).toLocaleDateString('en',{day:'numeric',month:'short',year:'numeric'})}${j.note?' · '+esc(j.note.slice(0,60)):''}</p></button>`).join(''):`<div class="empty">No applications here yet.<br>Tap + to add one.</div>`;
+ h+=`<button class="fab" id="fab">+</button>`;
+ $('#main').innerHTML=h;
+ document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filter=b.dataset.f;render()});
+ document.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>openJob(b.dataset.j));
+ $('#fab').onclick=()=>openJob();
+}
+
+function openJob(id){
+ const j=S.jobs.find(x=>x.id===id)||{co:'',role:'',date:today(),status:'Applied',link:'',note:''};
+ const opts=allStatus().map(s=>`<option ${s===j.status?'selected':''}>${esc(s)}</option>`).join('')+'<option value="__c">Custom…</option>';
+ $('#sheetBody').innerHTML=`<h1 style="font-size:24px">${id?'Edit application':'New application'}</h1>
+ <label>Company</label><input id="fCo" value="${esc(j.co)}" autocomplete="off">
+ <label>Role</label><input id="fRole" value="${esc(j.role)}" autocomplete="off">
+ <label>Date applied</label><input id="fDate" type="date" value="${j.date}">
+ <label>Status</label><select id="fSt">${opts}</select>
+ <input id="fCu" class="hide" placeholder="Custom status name" style="margin-top:8px">
+ <label>Job link</label><input id="fLink" type="url" value="${esc(j.link)}" placeholder="https://">
+ <label>Notes</label><textarea id="fNote" rows="3">${esc(j.note)}</textarea>
+ <div class="row">${id?'<button class="btn red" id="del">Delete</button>':''}<button class="btn ghost" id="cx">Cancel</button><button class="btn" id="sv">Save</button></div>`;
+ $('#sheet').classList.remove('hide');
+ $('#fSt').onchange=e=>$('#fCu').classList.toggle('hide',e.target.value!=='__c');
+ $('#cx').onclick=closeSheet;
+ if(id)$('#del').onclick=()=>{if(confirm('Delete this application?')){S.jobs=S.jobs.filter(x=>x.id!==id);save();closeSheet();render()}};
+ $('#sv').onclick=()=>{
+  const co=$('#fCo').value.trim();if(!co){$('#fCo').focus();return}
+  let s=$('#fSt').value;
+  if(s==='__c'){s=$('#fCu').value.trim();if(!s){$('#fCu').focus();return}if(!allStatus().includes(s))S.custom.push(s)}
+  const o={id:id||uid(),co,role:$('#fRole').value.trim(),date:$('#fDate').value||today(),status:s,link:$('#fLink').value.trim(),note:$('#fNote').value.trim()};
+  if(id)S.jobs[S.jobs.findIndex(x=>x.id===id)]=o;else S.jobs.push(o);
+  save();closeSheet();render()};
+}
+const closeSheet=()=>$('#sheet').classList.add('hide');
+$('#sheet').onclick=e=>{if(e.target.id==='sheet')closeSheet()};
+
+function renderData(){
+ const nt=Object.values(S.tasks).reduce((a,l)=>a+l.length,0);
+ $('#main').innerHTML=`<div class="top"><div><h1>Backup</h1><div class="sub">${nt} tasks · ${S.jobs.length} applications</div></div></div>
+ <div class="card"><p style="margin-top:0">Your data lives only in this browser on this device. Download a backup file now and then, and restore it on a new phone or after clearing Safari data.</p>
+ <div class="row" style="margin-top:0"><button class="btn" id="ex">Download backup</button></div>
+ <div class="row"><button class="btn ghost" id="im">Restore from file</button></div>
+ <input type="file" id="file" accept="application/json" class="hide"></div>`;
+ $('#ex').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));a.download='daylog-backup-'+today()+'.json';a.click()};
+ $('#im').onclick=()=>$('#file').click();
+ $('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.tasks||!d.jobs)throw 0;if(confirm('Replace current data with this backup?')){S=d;S.custom=S.custom||[];save();render()}}catch(x){alert('That file is not a valid DayLog backup.')}};r.readAsText(f)};
+}
+
+function render(){
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+ ({tasks:renderTasks,jobs:renderJobs,data:renderData})[tab]();
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{tab=b.dataset.t;$('#main').scrollTop=0;render()});
+render();
+</script>
+</body>
+</html>
